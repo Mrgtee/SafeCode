@@ -479,10 +479,16 @@ def get_og_client():
     if not OG_PRIVATE_KEY:
         raise HTTPException(status_code=500, detail="Missing OG_PRIVATE_KEY in environment")
 
-    return og.Client(
-        private_key=OG_PRIVATE_KEY,
-        payment_network=os.getenv("OG_PAYMENT_NETWORK", "base_sepolia"),
-    )
+    try:
+        return og.Client(
+            private_key=OG_PRIVATE_KEY,
+            payment_network=os.getenv("OG_PAYMENT_NETWORK", "base_sepolia"),
+        )
+    except TypeError:
+        try:
+            return og.Client(private_key=OG_PRIVATE_KEY)
+        except AttributeError:
+            return og.init(private_key=OG_PRIVATE_KEY)
 
 def get_settlement_mode(mode: str):
     if mode in ["snippet", "pr"]:
