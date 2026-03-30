@@ -943,10 +943,11 @@
       }
     </div>
 
-    <div class="result-card">
-      <h3>Explanation</h3>
-      <p>${escapeHtml(ai.user_explanation || ai.vibe_coder_explanation || "No explanation returned.")}</p>
-    </div>
+  <div class="result-card">
+    <h3>Explanation</h3>
+    <p>${escapeHtml(ai.user_explanation || ai.vibe_coder_explanation || "No explanation returned.")}</p>
+    ${ai.debug_error ? `<p><strong>Debug Error:</strong> ${escapeHtml(ai.debug_error)}</p>` : ""}
+  </div>
   `;
 }
 
