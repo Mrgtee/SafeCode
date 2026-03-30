@@ -477,9 +477,17 @@ def normalize_all(semgrep_data: Dict[str, Any], bandit_data: Dict[str, Any], tri
 
 def get_og_client():
     if not OG_PRIVATE_KEY:
-        raise HTTPException(status_code=500, detail="Missing OG_PRIVATE_KEY in .env")
-    return og.init(private_key=OG_PRIVATE_KEY)
+        raise HTTPException(status_code=500, detail="Missing OG_PRIVATE_KEY in environment")
 
+    return og.Client(
+        private_key=OG_PRIVATE_KEY,
+        payment_network=os.getenv("OG_PAYMENT_NETWORK", "base_sepolia"),
+    )
+
+def get_settlement_mode(mode: str):
+    if mode in ["snippet", "pr"]:
+        return og.x402SettlementMode.INDIVIDUAL_FULL
+    return og.x402SettlementMode.BATCH_HASHED
 
 def ensure_opg_approval_once(client) -> None:
     global _APPROVAL_DONE
@@ -694,9 +702,13 @@ PR evidence payload:
     raise ValueError(f"Unsupported mode: {mode}")
 
 def generate_verified_reasoning(mode: str, evidence_payload: Dict[str, Any]) -> Dict[str, Any]:
-    client = get_og_client()
-    ensure_opg_approval_once(client)
+    if os.getenv("OG_ENABLE_VERIFIED_REASONING", "true").lower() != "true":
+        fallback = make_human_fallback_summary(mode, evidence_payload.get("findings", []))
+        fallback["verification_mode"] = "fallback"
+        fallback["user_explanation"] = "Verified reasoning is disabled in this environment."
+        return fallback
 
+    client = get_og_client()
     prompt = build_opengradient_prompt(mode, evidence_payload)
 
     try:
@@ -708,7 +720,7 @@ def generate_verified_reasoning(mode: str, evidence_payload: Dict[str, Any]) -> 
             ],
             max_tokens=1800,
             temperature=0.1,
-            x402_settlement_mode=og.x402SettlementMode.SETTLE_METADATA,
+            x402_settlement_mode=get_settlement_mode(mode),
         )
 
         raw = result.chat_output["content"]
@@ -726,6 +738,13 @@ def generate_verified_reasoning(mode: str, evidence_payload: Dict[str, Any]) -> 
 
         parsed["payment_hash"] = payment_hash
         parsed["verification_mode"] = "verified"
+
+        if "recommended_actions" in parsed and "quick_fixes" not in parsed:
+            parsed["quick_fixes"] = parsed["recommended_actions"]
+
+        if "user_explanation" in parsed and "vibe_coder_explanation" not in parsed:
+            parsed["vibe_coder_explanation"] = parsed["user_explanation"]
+
         return parsed
 
     except Exception as e:
@@ -737,7 +756,11 @@ def generate_verified_reasoning(mode: str, evidence_payload: Dict[str, Any]) -> 
             fallback["user_explanation"] = (
                 "AI reasoning is temporarily unavailable, but the repository findings below are still valid and can be reviewed."
             )
-        elif mode == "snippet":
+        elif mode == "pr":
+            fallback["user_explanation"] = (
+                "AI reasoning is temporarily unavailable, but the PR findings below are still valid and can be reviewed."
+            )
+        else:
             fallback["user_explanation"] = (
                 "AI reasoning is temporarily unavailable, but the snippet findings below are still valid and can be reviewed."
             )
