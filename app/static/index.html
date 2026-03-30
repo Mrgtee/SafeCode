@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>SafeCode</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #edf4f7;
+      --card: rgba(255,255,255,0.50);
+      --border: rgba(255,255,255,0.62);
+      --text: #0b4f64;
+      --deep: #0d5d71;
+      --dark: #061e28;
+      --muted: #567988;
+      --shadow: 0 20px 60px rgba(14, 56, 72, 0.10);
+      --radius: 24px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top, rgba(255,255,255,0.95), transparent 35%),
+        linear-gradient(180deg, #edf4f7 0%, #e5f0f4 100%);
+      min-height: 100vh;
+    }
+
+    .container {
+      width: min(1240px, calc(100% - 40px));
+      margin: 0 auto;
+      padding-bottom: 40px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 0;
+      gap: 16px;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--deep);
+    }
+
+    .brand img {
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.5);
+      border: 1px solid var(--border);
+      padding: 5px;
+      backdrop-filter: blur(12px);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.52);
+      border: 1px solid var(--border);
+      backdrop-filter: blur(16px);
+      box-shadow: var(--shadow);
+    }
+
+    .nav button, .cta {
+      border: none;
+      cursor: pointer;
+      border-radius: 999px;
+      padding: 11px 16px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .nav button {
+      background: transparent;
+      color: var(--deep);
+    }
+
+    .cta {
+      background: #061723;
+      color: #fff;
+    }
+
+    .glass {
+      background: var(--card);
+      backdrop-filter: blur(18px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+    }
+
+    .landing {
+      display: block;
+    }
+
+    .landing.hidden {
+      display: none;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 20px;
+      margin-top: 10px;
+    }
+
+    .hero-main {
+      min-height: 320px;
+      padding: 34px;
+      background: linear-gradient(180deg, #0f667c 0%, #0a4d5f 100%);
+      color: #effcff;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .hero-main h1 {
+      margin: 0 0 16px;
+      font-size: clamp(42px, 5vw, 72px);
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+    }
+
+    .hero-main p {
+      margin: 0;
+      max-width: 650px;
+      line-height: 1.65;
+      color: rgba(239,252,255,0.92);
+      font-size: 16px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 22px;
+    }
+
+    .hero-actions button {
+      border: none;
+      cursor: pointer;
+      border-radius: 999px;
+      padding: 13px 20px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .primary {
+      background: #fff;
+      color: var(--deep);
+    }
+
+    .secondary {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .hero-side {
+      display: grid;
+      gap: 16px;
+    }
+
+    .mini-card {
+      padding: 22px;
+      min-height: 96px;
+    }
+
+    .mini-card h3 {
+      margin: 0 0 8px;
+      color: var(--deep);
+      font-size: 32px;
+      line-height: 1.05;
+    }
+
+    .mini-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .feature-grid {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .feature-card {
+      padding: 24px;
+      min-height: 180px;
+    }
+
+    .feature-card h3 {
+      margin: 0 0 10px;
+      color: var(--deep);
+      font-size: 24px;
+      line-height: 1.1;
+    }
+
+    .feature-card p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 14px;
+    }
+
+    .dashboard {
+      display: none;
+      margin-top: 18px;
+    }
+
+    .dashboard.active {
+      display: block;
+    }
+
+    .workspace-shell {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+
+    .sidebar {
+      padding: 18px;
+      position: sticky;
+      top: 16px;
+    }
+
+    .sidebar h3 {
+      margin: 0 0 6px;
+      color: var(--deep);
+      font-size: 20px;
+    }
+
+    .sidebar p {
+      margin: 0 0 18px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 13px;
+    }
+
+    .side-nav {
+      display: grid;
+      gap: 10px;
+    }
+
+    .side-nav button {
+      width: 100%;
+      text-align: left;
+      border: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.68);
+      color: var(--deep);
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .side-nav button.active {
+      background: #06202b;
+      color: #fff;
+    }
+
+    .user-row {
+      margin-top: 18px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .user-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.60);
+      border: 1px solid var(--border);
+    }
+
+    .user-pill img {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+    }
+
+    .content-panel {
+      padding: 22px;
+      min-height: 680px;
+    }
+
+    .content-head h2 {
+      margin: 0 0 6px;
+      color: var(--deep);
+      font-size: 28px;
+    }
+
+    .content-head p {
+      margin: 0 0 20px;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--deep);
+      margin-top: 4px;
+    }
+
+    input, textarea, select {
+      width: 100%;
+      padding: 14px 16px;
+      margin-top: 8px;
+      margin-bottom: 14px;
+      border-radius: 16px;
+      border: 1px solid rgba(11,79,100,0.12);
+      background: rgba(255,255,255,0.72);
+      color: var(--deep);
+      outline: none;
+      font-size: 14px;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 120px;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+    }
+
+    .panel-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 4px;
+    }
+
+    .result-card, .finding {
+      background: rgba(255,255,255,0.58);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 18px;
+      margin-top: 14px;
+    }
+
+    .result-card h3, .finding h4 {
+      margin-top: 0;
+      color: var(--deep);
+    }
+
+    .finding p, .result-card p {
+      margin: 8px 0;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .status {
+      margin-top: 14px;
+      font-weight: 700;
+      color: var(--deep);
+    }
+
+    .doc-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(6, 23, 35, 0.42);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      z-index: 50;
+    }
+
+    .doc-modal.active {
+      display: flex;
+    }
+
+    .doc-box {
+      width: min(860px, 100%);
+      max-height: 88vh;
+      overflow: auto;
+      padding: 30px;
+    }
+
+    .doc-box h2 {
+      margin-top: 0;
+      color: var(--deep);
+      font-size: 28px;
+    }
+
+    .doc-box p {
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .doc-step {
+      margin-top: 14px;
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.58);
+    }
+
+    .doc-step strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--deep);
+    }
+
+    @media (max-width: 980px) {
+      .hero,
+      .feature-grid,
+      .workspace-shell,
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: static;
+      }
+
+      .topbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .nav {
+        width: 100%;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <div class="brand">
+        <img src="/static/logo.png" alt="SafeCode logo" />
+        <span>SafeCode</span>
+      </div>
+
+      <div class="nav">
+        <button onclick="scrollToTop()">Home</button>
+        <button onclick="openDocs()">Docs</button>
+        <button onclick="scrollToWorkspace()">Workspace</button>
+        <button class="cta" id="topConnectBtn" onclick="connectGitHub()">Connect GitHub</button>
+      </div>
+    </div>
+
+    <div id="landing" class="landing">
+      <div class="hero">
+        <div class="glass hero-main">
+          <div>
+            <h1>Audit code faster.<br>Debug smarter.<br>Merge safer.</h1>
+            <p>
+              SafeCode helps founders, developers, and vibe coders inspect code, review pull requests,
+              and understand failures faster with real scanning plus AI reasoning.
+            </p>
+          </div>
+
+          <div class="hero-actions">
+            <button class="primary" onclick="connectGitHub()">Connect GitHub</button>
+            <button class="secondary" onclick="openDocs()">How it works</button>
+          </div>
+        </div>
+
+        <div class="hero-side">
+          <div class="glass mini-card">
+            <h3>PR Audit</h3>
+            <p>Review pull requests before merge and get structured risk analysis with a merge recommendation.</p>
+          </div>
+
+          <div class="glass mini-card">
+            <h3>Repo Scan</h3>
+            <p>Scan connected repositories and surface the most important issues faster.</p>
+          </div>
+
+          <div class="glass mini-card">
+            <h3>Paste Code</h3>
+            <p>Paste code and an error message to get clearer debugging help and corrections.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="feature-grid">
+        <div class="glass feature-card">
+          <h3>Built for founders</h3>
+          <p>
+            Audit pull requests faster, catch risky changes earlier, and make better merge decisions.
+          </p>
+        </div>
+
+        <div class="glass feature-card">
+          <h3>Built for developers</h3>
+          <p>
+            Connect your repository to inspect bugs, dependency risks, security issues, and config mistakes.
+          </p>
+        </div>
+
+        <div class="glass feature-card">
+          <h3>Built for vibe coders</h3>
+          <p>
+            SafeCode explains what broke in simpler language and shows practical ways to fix it.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div id="dashboardArea" class="dashboard">
+      <div class="workspace-shell">
+        <div class="glass sidebar">
+          <h3>Workspace</h3>
+          <p id="sessionText">Checking GitHub connection...</p>
+
+          <div class="side-nav">
+            <button class="side-btn active" onclick="showWorkspacePanel('repoPanel', this)">Repo Scan</button>
+            <button class="side-btn" onclick="showWorkspacePanel('prPanel', this)">PR Audit</button>
+            <button class="side-btn" onclick="showWorkspacePanel('snippetPanel', this)">Paste Code</button>
+          </div>
+
+          <div class="user-row">
+            <div id="userPill"></div>
+            <button class="cta hidden" id="logoutBtn" onclick="logout()">Logout</button>
+          </div>
+        </div>
+
+        <div class="glass content-panel">
+          <div id="repoPanel">
+            <div class="content-head">
+              <h2>Repo Scan</h2>
+              <p>Select a connected repository, set your scan focus, and inspect the most important findings.</p>
+            </div>
+
+            <label>Connected Repositories</label>
+            <select id="repo_picker" onchange="fillRepoFieldsFromPicker()">
+              <option value="">Select a connected repository</option>
+            </select>
+
+            <div class="grid-2">
+              <div>
+                <label>Repo Owner</label>
+                <input id="repo_owner" placeholder="e.g. vercel" />
+              </div>
+              <div>
+                <label>Repo Name</label>
+                <input id="repo_name" placeholder="e.g. next.js" />
+              </div>
+            </div>
+
+            <label>Branch (optional)</label>
+            <input id="repo_branch" placeholder="leave blank for default branch" />
+
+            <label>Focus</label>
+            <textarea id="repo_focus">Audit this codebase for bugs, security issues, dependency risks, config mistakes, and breaking changes. Explain in plain English.</textarea>
+
+            <div class="panel-actions">
+              <button class="cta" onclick="runRepoScan()">Run Repo Scan</button>
+            </div>
+          </div>
+
+          <div id="prPanel" class="hidden">
+            <div class="content-head">
+              <h2>PR Audit</h2>
+              <p>Select a connected repository, choose an open pull request, and review merge risk before approving changes.</p>
+            </div>
+
+            <label>Connected Repositories</label>
+            <select id="pr_repo_picker" onchange="fillPrFieldsFromPicker()">
+              <option value="">Select a connected repository</option>
+            </select>
+
+            <div class="grid-2">
+              <div>
+                <label>Repo Owner</label>
+                <input id="pr_owner" placeholder="e.g. your-org" />
+              </div>
+              <div>
+                <label>Repo Name</label>
+                <input id="pr_repo" placeholder="e.g. your-repo" />
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div>
+                <label>Branch (optional)</label>
+                <input id="pr_branch" placeholder="leave blank for default branch" />
+              </div>
+              <div>
+                <label>Open Pull Requests</label>
+                <select id="pr_picker" onchange="fillPrNumberFromPicker()">
+                  <option value="">Select an open PR</option>
+                </select>
+              </div>
+            </div>
+
+            <label>PR Number</label>
+            <input id="pr_number" type="number" placeholder="e.g. 12" />
+
+            <label>Focus</label>
+            <textarea id="pr_focus">Audit this pull request for bugs, risky changes, missing checks, and potential breakages. Give a merge recommendation.</textarea>
+
+            <div class="panel-actions">
+              <button class="cta" onclick="runPrScan()">Run PR Audit</button>
+            </div>
+          </div>
+
+          <div id="snippetPanel" class="hidden">
+            <div class="content-head">
+              <h2>Paste Code</h2>
+              <p>Paste a snippet and an optional error message to get a simpler explanation, likely causes, and practical fixes.</p>
+            </div>
+
+            <label>Language</label>
+<select id="snippet_language">
+  <option value="auto">Auto Detect</option>
+  <option value="python">Python</option>
+  <option value="javascript">JavaScript</option>
+  <option value="typescript">TypeScript</option>
+  <option value="tsx">TSX</option>
+  <option value="jsx">JSX</option>
+  <option value="json">JSON</option>
+  <option value="solidity">Solidity</option>
+</select>
+
+            <label>Error message (optional)</label>
+            <input id="snippet_error" placeholder="Paste the error message if you have one" />
+
+            <label>Focus</label>
+            <textarea id="snippet_focus">Find likely bugs, explain why they happen, and suggest fixes.</textarea>
+
+            <label>Code</label>
+            <textarea id="snippet_code" style="min-height: 240px;" placeholder="Paste your code here"></textarea>
+
+            <div class="panel-actions">
+              <button class="cta" onclick="runSnippetScan()">Run Snippet Scan</button>
+            </div>
+          </div>
+
+          <div id="status" class="status"></div>
+          <div id="result"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="docModal" class="doc-modal">
+    <div class="glass doc-box">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+        <h2>SafeCode Docs</h2>
+        <button class="cta" onclick="closeDocs()">Close</button>
+      </div>
+
+      <p>
+        SafeCode is a code audit and debugging platform for founders, developers, and vibe coders.
+        It combines real code scanning with AI reasoning to help you review repositories, audit pull requests,
+        and understand broken code faster.
+      </p>
+
+      <div class="doc-step">
+        <strong>1. Connect GitHub</strong>
+        Connect your GitHub account securely through OAuth so SafeCode can access the repositories you choose.
+      </div>
+
+      <div class="doc-step">
+        <strong>2. Choose a workflow</strong>
+        Use Repo Scan to inspect a repository, PR Audit to review an open pull request, or Paste Code for quick debugging help.
+      </div>
+
+      <div class="doc-step">
+        <strong>3. Select a connected repository</strong>
+        In Repo Scan and PR Audit, choose from your connected GitHub repositories directly inside the dashboard.
+      </div>
+
+      <div class="doc-step">
+        <strong>4. Run the analysis</strong>
+        SafeCode uses scanning tools to detect issues and OpenGradient to explain the findings, prioritize risk, and suggest fixes.
+      </div>
+
+      <div class="doc-step">
+        <strong>5. Review the result</strong>
+        Use the summary, top risks, merge recommendation, and vibe-coder explanation to understand what matters and what to fix next.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const landing = document.getElementById("landing");
+    const dashboardArea = document.getElementById("dashboardArea");
+    const resultEl = document.getElementById("result");
+    const statusEl = document.getElementById("status");
+
+    let connectedRepos = [];
+
+    function scrollToTop() {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function scrollToWorkspace() {
+      dashboardArea.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    function openDocs() {
+      document.getElementById("docModal").classList.add("active");
+    }
+
+    function closeDocs() {
+      document.getElementById("docModal").classList.remove("active");
+    }
+
+    function connectGitHub() {
+      window.location.href = "/login/github";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.innerText = text ?? "";
+      return div.innerHTML;
+    }
+
+    function showWorkspacePanel(panelId, btn) {
+      document.getElementById("repoPanel").classList.add("hidden");
+      document.getElementById("prPanel").classList.add("hidden");
+      document.getElementById("snippetPanel").classList.add("hidden");
+      document.getElementById(panelId).classList.remove("hidden");
+
+      document.querySelectorAll(".side-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+
+      statusEl.innerHTML = "";
+      resultEl.innerHTML = "";
+    }
+
+    function fillRepoFieldsFromPicker() {
+      const value = document.getElementById("repo_picker").value;
+      if (!value) return;
+
+      const [owner, repo] = value.split("/");
+      document.getElementById("repo_owner").value = owner || "";
+      document.getElementById("repo_name").value = repo || "";
+
+      const selected = connectedRepos.find(r => r.full_name === value);
+      if (selected && selected.default_branch) {
+        document.getElementById("repo_branch").value = selected.default_branch;
+      }
+    }
+
+    function fillPrFieldsFromPicker() {
+      const value = document.getElementById("pr_repo_picker").value;
+      if (!value) return;
+
+      const [owner, repo] = value.split("/");
+      document.getElementById("pr_owner").value = owner || "";
+      document.getElementById("pr_repo").value = repo || "";
+
+      const selected = connectedRepos.find(r => r.full_name === value);
+      if (selected && selected.default_branch) {
+        document.getElementById("pr_branch").value = selected.default_branch;
+      }
+
+      loadPullRequests(owner, repo);
+    }
+
+  function fillPrNumberFromPicker() {
+  const prPicker = document.getElementById("pr_picker");
+  const value = prPicker.value;
+  if (!value) return;
+
+  document.getElementById("pr_number").value = value;
+
+  const selectedOption = prPicker.options[prPicker.selectedIndex];
+  const headRef = selectedOption.getAttribute("data-head-ref");
+  if (headRef) {
+    document.getElementById("pr_branch").value = headRef;
+  }
+}
+
+    async function loadConnectedRepos() {
+      try {
+        const res = await fetch("/api/repos");
+        const data = await res.json();
+        if (!res.ok) return;
+
+        connectedRepos = data.repos || [];
+
+        const repoPicker = document.getElementById("repo_picker");
+        const prRepoPicker = document.getElementById("pr_repo_picker");
+
+        repoPicker.innerHTML = `<option value="">Select a connected repository</option>`;
+        prRepoPicker.innerHTML = `<option value="">Select a connected repository</option>`;
+
+        connectedRepos.forEach(repo => {
+          const label = repo.private ? `${repo.full_name} (private)` : repo.full_name;
+          repoPicker.innerHTML += `<option value="${escapeHtml(repo.full_name)}">${escapeHtml(label)}</option>`;
+          prRepoPicker.innerHTML += `<option value="${escapeHtml(repo.full_name)}">${escapeHtml(label)}</option>`;
+        });
+      } catch (e) {
+        console.error("Failed to load repos", e);
+      }
+    }
+
+    async function loadPullRequests(owner, repo) {
+  try {
+    const res = await fetch(`/api/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}/pulls`);
+    const data = await res.json();
+
+    const prPicker = document.getElementById("pr_picker");
+    prPicker.innerHTML = `<option value="">Select an open PR</option>`;
+
+    if (!res.ok) return;
+
+    (data.pulls || []).forEach(pr => {
+      prPicker.innerHTML += `
+        <option value="${pr.number}" data-head-ref="${escapeHtml(pr.head_ref || "")}">
+          #${pr.number} - ${escapeHtml(pr.title || "")}
+        </option>
+      `;
+    });
+  } catch (e) {
+    console.error("Failed to load PRs", e);
+  }
+}
+
+    function renderFindings(findings) {
+      if (!findings || !findings.length) {
+        return `<div class="result-card"><h3>Scanner Findings</h3><p>No findings returned.</p></div>`;
+      }
+
+      return `
+        <div class="result-card">
+          <h3>Scanner Findings</h3>
+          ${findings.map(f => `
+            <div class="finding">
+              <p><strong>${escapeHtml(f.title || "Finding")}</strong></p>
+              <p><strong>Tool:</strong> ${escapeHtml(f.tool || "")}</p>
+              <p><strong>Severity:</strong> ${escapeHtml(f.severity || "")}</p>
+              <p><strong>File:</strong> ${escapeHtml(f.file || "")}</p>
+              <p><strong>Line:</strong> ${escapeHtml(String(f.line || 0))}</p>
+              <p><strong>Description:</strong> ${escapeHtml(f.description || "")}</p>
+              <p><strong>Fix hint:</strong> ${escapeHtml(f.fix_hint || "")}</p>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+  function renderSeverityGroups(ai) {
+  const groups = ai?.severity_groups || {};
+  const order = ["critical", "high", "medium", "low"];
+
+  return `
+    <div class="result-card">
+      <h3>Findings by Severity</h3>
+      ${
+        order.map(level => {
+          const raw = groups[level];
+          const count = Array.isArray(raw)
+            ? raw.length
+            : (typeof raw === "number" ? raw : 0);
+
+          return `
+            <div class="finding">
+              <p><strong>${level.toUpperCase()}</strong> — ${count}</p>
+            </div>
+          `;
+        }).join("")
+      }
+    </div>
+  `;
+}
+
+    function renderAiSummary(ai, mode = "repo") {
+  if (!ai) return `<div class="result-card"><h3>Summary</h3><p>No summary returned.</p></div>`;
+
+  const risks = ai.top_risks || [];
+  const quickFixes = ai.quick_fixes || [];
+  const statusLabel = ai.status_label || "Unknown";
+
+  const statusTitle =
+    mode === "pr"
+      ? "PR Decision"
+      : mode === "snippet"
+      ? "Snippet Status"
+      : "Repo Status";
+
+  return `
+      <div class="result-card">
+      <h3>${statusTitle}</h3>
+      <p><strong>Status:</strong> ${escapeHtml(statusLabel)}</p>
+      <p><strong>Risk Score:</strong> ${escapeHtml(String(ai.risk_score ?? ""))}</p>
+      <p><strong>Summary:</strong> ${escapeHtml(ai.summary || "")}</p>
+      <p><strong>Payment Hash:</strong> ${escapeHtml(ai.payment_hash || "Not returned")}</p>
+      <p><strong>Verification:</strong> ${escapeHtml(ai.verification_mode || "fallback")}</p>
+    </div>
+
+    <div class="result-card">
+      <h3>Top Risks</h3>
+      ${
+        risks.length
+          ? risks.map(r => `
+            <div class="finding">
+              <p><strong>${escapeHtml(r.title || "")}</strong></p>
+              <p><strong>Severity:</strong> ${escapeHtml(r.severity || "")}</p>
+              <p><strong>File:</strong> ${escapeHtml(r.file || "")}</p>
+              <p><strong>Why it matters:</strong> ${escapeHtml(r.why_it_matters || "")}</p>
+              <p><strong>Fix:</strong> ${escapeHtml(r.fix || "")}</p>
+            </div>
+          `).join("")
+          : "<p>No top risks returned.</p>"
+      }
+    </div>
+
+    <div class="result-card">
+      <h3>Recommended Actions</h3>
+      ${
+        quickFixes.length
+          ? quickFixes.map(item => `<p>• ${escapeHtml(item)}</p>`).join("")
+          : "<p>No actions returned.</p>"
+      }
+    </div>
+
+    <div class="result-card">
+      <h3>Explanation</h3>
+      <p>${escapeHtml(ai.user_explanation || ai.vibe_coder_explanation || "No explanation returned.")}</p>
+    </div>
+  `;
+}
+
+    async function checkSession() {
+      try {
+        const res = await fetch("/api/session");
+        const data = await res.json();
+
+        const sessionText = document.getElementById("sessionText");
+        const userPill = document.getElementById("userPill");
+        const logoutBtn = document.getElementById("logoutBtn");
+        const topConnectBtn = document.getElementById("topConnectBtn");
+
+        if (data.connected) {
+          landing.classList.add("hidden");
+          dashboardArea.classList.add("active");
+          sessionText.innerText = `Connected as ${data.user?.login || "GitHub user"}. Choose a workspace tool from the left.`;
+          logoutBtn.classList.remove("hidden");
+          topConnectBtn.innerText = "GitHub Connected";
+          topConnectBtn.onclick = null;
+          topConnectBtn.style.opacity = "0.7";
+          topConnectBtn.style.cursor = "default";
+
+          userPill.innerHTML = `
+            <div class="user-pill">
+              <img src="${escapeHtml(data.user?.avatar_url || "")}" alt="avatar" />
+              <span>${escapeHtml(data.user?.login || "")}</span>
+            </div>
+          `;
+
+          await loadConnectedRepos();
+        } else {
+          landing.classList.remove("hidden");
+          dashboardArea.classList.remove("active");
+          sessionText.innerText = "Not connected.";
+          userPill.innerHTML = "";
+          logoutBtn.classList.add("hidden");
+          topConnectBtn.innerText = "Connect GitHub";
+          topConnectBtn.onclick = connectGitHub;
+          topConnectBtn.style.opacity = "1";
+          topConnectBtn.style.cursor = "pointer";
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function logout() {
+      await fetch("/logout", { method: "POST" });
+      location.reload();
+    }
+
+    async function postJson(url, payload, loadingText) {
+  statusEl.innerHTML = loadingText;
+  resultEl.innerHTML = "";
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload)
+  });
+
+  const text = await res.text();
+  let data;
+
+  try {
+    data = JSON.parse(text);
+  } catch {
+    throw new Error(text || "Request failed");
+  }
+
+  if (!res.ok) {
+    throw new Error(data.detail || data.error || "Request failed");
+  }
+
+  return data;
+}
+
+function renderClassifiedPrFindings(data) {
+  if (!data.pr_number || !data.classified_findings) return "";
+
+  const touched = data.classified_findings.touched_by_pr || [];
+  const existing = data.classified_findings.existing_repo_issues || [];
+  const changedFiles = data.pr_changed_files || [];
+
+  return `
+    <div class="result-card">
+      <h3>PR Changed Files</h3>
+      ${
+        changedFiles.length
+          ? changedFiles.map(file => `<p>${escapeHtml(file)}</p>`).join("")
+          : "<p>No changed files returned.</p>"
+      }
+    </div>
+
+    <div class="result-card">
+      <h3>Findings Tied to This PR</h3>
+      ${
+        touched.length
+          ? touched.map(f => `
+            <div class="finding">
+              <p><strong>${escapeHtml(f.title || "")}</strong></p>
+              <p><strong>Severity:</strong> ${escapeHtml(f.severity || "")}</p>
+              <p><strong>File:</strong> ${escapeHtml(f.file || "")}</p>
+              <p><strong>Description:</strong> ${escapeHtml(f.description || "")}</p>
+              <p><strong>Fix hint:</strong> ${escapeHtml(f.fix_hint || "")}</p>
+            </div>
+          `).join("")
+          : "<p>No scanner findings were directly tied to files changed by this PR.</p>"
+      }
+    </div>
+
+    <div class="result-card">
+      <h3>Existing Repo Issues</h3>
+      ${
+        existing.length
+          ? existing.map(f => `
+            <div class="finding">
+              <p><strong>${escapeHtml(f.title || "")}</strong></p>
+              <p><strong>Severity:</strong> ${escapeHtml(f.severity || "")}</p>
+              <p><strong>File:</strong> ${escapeHtml(f.file || "")}</p>
+              <p><strong>Description:</strong> ${escapeHtml(f.description || "")}</p>
+              <p><strong>Fix hint:</strong> ${escapeHtml(f.fix_hint || "")}</p>
+            </div>
+          `).join("")
+          : "<p>No separate existing repo issues were surfaced.</p>"
+      }
+    </div>
+  `;
+}
+
+  function renderScanResult(data, title) {
+  statusEl.innerHTML = `${title} complete.`;
+
+  const mode = data.pr_number ? "pr" : "repo";
+
+  resultEl.innerHTML = `
+    <div class="result-card">
+      <h3>Result</h3>
+      <p><strong>Repo:</strong> ${escapeHtml(data.repo || "")}</p>
+      <p><strong>PR Number:</strong> ${escapeHtml(String(data.pr_number || ""))}</p>
+      <p><strong>Files Downloaded:</strong> ${escapeHtml(String(data.files_downloaded || 0))}</p>
+      <p><strong>Detected Language:</strong> ${escapeHtml(data.detected_language || "")}</p>
+      <p><strong>Counts:</strong> ${escapeHtml(JSON.stringify(data.scanner_counts || {}))}</p>
+    </div>
+
+    ${renderAiSummary(data.ai_summary, mode)}
+    ${renderSeverityGroups(data.ai_summary)}
+    ${renderClassifiedPrFindings(data)}
+  `;
+}
+
+    async function runRepoScan() {
+      try {
+        const payload = {
+          owner: document.getElementById("repo_owner").value,
+          repo: document.getElementById("repo_name").value,
+          branch: document.getElementById("repo_branch").value,
+          focus: document.getElementById("repo_focus").value,
+        };
+
+        const data = await postJson("/api/repo-scan", payload, "Running repo scan...");
+        renderScanResult(data, "Repo scan");
+      } catch (err) {
+        statusEl.innerHTML = `Error: ${escapeHtml(err.message)}`;
+      }
+    }
+
+    async function runPrScan() {
+      try {
+        const payload = {
+          owner: document.getElementById("pr_owner").value,
+          repo: document.getElementById("pr_repo").value,
+          branch: document.getElementById("pr_branch").value,
+          pr_number: Number(document.getElementById("pr_number").value),
+          focus: document.getElementById("pr_focus").value,
+        };
+
+        const data = await postJson("/api/repo-scan", payload, "Running PR audit...");
+        renderScanResult(data, "PR audit");
+      } catch (err) {
+        statusEl.innerHTML = `Error: ${escapeHtml(err.message)}`;
+      }
+    }
+
+    async function runSnippetScan() {
+      try {
+        const payload = {
+          code: document.getElementById("snippet_code").value,
+          language: document.getElementById("snippet_language").value,
+          error_message: document.getElementById("snippet_error").value,
+          focus: document.getElementById("snippet_focus").value,
+        };
+
+        const data = await postJson("/api/snippet-scan", payload, "Running snippet scan...");
+
+        statusEl.innerHTML = "Snippet scan complete.";
+
+                resultEl.innerHTML = `
+          <div class="result-card">
+            <h3>Snippet Result</h3>
+            <p><strong>Language:</strong> ${escapeHtml(data.language || "")}</p>
+            <p><strong>Counts:</strong> ${escapeHtml(JSON.stringify(data.scanner_counts || {}))}</p>
+          </div>
+
+          ${renderAiSummary(data.ai_summary, "snippet")}
+          ${renderSeverityGroups(data.ai_summary)}
+
+          <div class="result-card">
+            <h3>Scanner Findings</h3>
+            ${
+              (data.top_findings || []).length
+                ? data.top_findings.map(f => `
+                  <div class="finding">
+                    <p><strong>${escapeHtml(f.title || "Finding")}</strong></p>
+                    <p><strong>Tool:</strong> ${escapeHtml(f.tool || "")}</p>
+                    <p><strong>Severity:</strong> ${escapeHtml(f.severity || "")}</p>
+                    <p><strong>File:</strong> ${escapeHtml(f.file || "")}</p>
+                    <p><strong>Line:</strong> ${escapeHtml(String(f.line || 0))}</p>
+                    <p><strong>Description:</strong> ${escapeHtml(f.description || "")}</p>
+                    <p><strong>Fix hint:</strong> ${escapeHtml(f.fix_hint || "")}</p>
+                  </div>
+                `).join("")
+                : "<p>No findings returned.</p>"
+            }
+          </div>
+        `;
+      } catch (err) {
+        statusEl.innerHTML = `Error: ${escapeHtml(err.message)}`;
+      }
+    }
+
+    checkSession();
+  </script>
+</body>
+</html>

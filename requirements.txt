@@ -1,0 +1,8 @@
+fastapi==0.115.12
+uvicorn==0.34.0
+requests==2.32.3
+python-dotenv==1.0.1
+semgrep==1.118.0
+bandit==1.7.10
+opengradient==0.6.0
+itsdangerous==2.2.0
