@@ -487,7 +487,7 @@ def ensure_og_approval_once(llm):
     if _OG_APPROVAL_DONE:
         return
 
-    llm.ensure_opg_approval(min_allowance=5)
+    llm.ensure_opg_approval(min_allowance=0.1)
     _OG_APPROVAL_DONE = True
 
 def get_settlement_mode(mode: str):
@@ -707,7 +707,6 @@ def generate_verified_reasoning(mode: str, evidence_payload: Dict[str, Any]) -> 
         return fallback
 
     llm = get_og_llm()
-    ensure_og_approval_once(llm)
     prompt = build_opengradient_prompt(mode, evidence_payload)
 
     async def _run_chat():
@@ -722,6 +721,7 @@ def generate_verified_reasoning(mode: str, evidence_payload: Dict[str, Any]) -> 
         )
 
     try:
+        ensure_og_approval_once(llm)
         result = asyncio.run(_run_chat())
 
         raw = result.chat_output["content"]
