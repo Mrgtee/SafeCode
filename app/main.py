@@ -37,7 +37,6 @@ GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID", "").strip()
 GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET", "").strip()
 BASE_URL = os.getenv("BASE_URL", "http://127.0.0.1:8000").strip()
 
-_APPROVAL_DONE = False
 
 app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
@@ -496,16 +495,6 @@ def get_settlement_mode(mode: str):
         return og.x402SettlementMode.INDIVIDUAL_FULL
     return og.x402SettlementMode.BATCH_HASHED
 
-def ensure_opg_approval_once(client) -> None:
-    global _APPROVAL_DONE
-    if _APPROVAL_DONE:
-        return
-    try:
-        if hasattr(client, "llm") and hasattr(client.llm, "ensure_opg_approval"):
-            client.llm.ensure_opg_approval(opg_amount=5)
-        _APPROVAL_DONE = True
-    except Exception:
-        pass
 
 def build_snippet_evidence_payload(code: str, language: str, findings: List[Dict[str, Any]], error_message: str = "") -> Dict[str, Any]:
     return {
@@ -778,104 +767,6 @@ def generate_verified_reasoning(mode: str, evidence_payload: Dict[str, Any]) -> 
             )
 
         return fallback
-
-def explain_with_opengradient(context_name: str, focus: str, findings: List[Dict[str, Any]], sample_files: Dict[str, str]) -> Dict[str, Any]:
-    client = get_og_client()
-    ensure_opg_approval_once(client)
-
-    findings_text = json.dumps(findings[:20], ensure_ascii=False, indent=2)
-
-    sample_parts = []
-    for path, content in sample_files.items():
-        sample_parts.append(f"FILE: {path}\n```\n{content[:4000]}\n```")
-    sample_text = "\n\n".join(sample_parts)
-
-    system_prompt = """
-You are a senior code auditor and debugging engineer.
-Return ONLY valid JSON.
-Do not wrap the JSON in markdown.
-
-Schema:
-{
-  "summary": "string",
-  "risk_score": 0,
-  "top_risks": [
-    {
-      "title": "string",
-      "severity": "critical|high|medium|low",
-      "file": "string",
-      "why_it_matters": "string",
-      "fix": "string"
-    }
-  ],
-  "quick_fixes": ["string"],
-  "vibe_coder_explanation": "string",
-  "merge_recommendation": "approve|caution|block"
-}
-"""
-
-    user_prompt = f"""
-Target: {context_name}
-
-Focus:
-{focus}
-
-Scanner findings:
-{findings_text}
-
-Relevant code samples:
-{sample_text}
-
-Tasks:
-1. Summarize the real issues.
-2. Prioritize the top risks.
-3. Explain them in plain English for non-developers.
-4. Suggest practical fixes.
-5. Give a merge recommendation: approve, caution, or block.
-"""
-
-    try:
-        result = client.llm.chat(
-            model=og.TEE_LLM.GPT_4O,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ],
-            max_tokens=1600,
-            temperature=0.1,
-            x402_settlement_mode=og.x402SettlementMode.SETTLE_BATCH,
-        )
-        raw = result.chat_output["content"]
-        payment_hash = getattr(result, "payment_hash", None)
-
-    except Exception as e:
-        fallback = make_human_fallback_summary("repo", findings)
-        fallback["vibe_coder_explanation"] = (
-            "AI explanation is temporarily unavailable in this environment, but the scanner findings below are still valid."
-        )
-        fallback["debug_error"] = str(e)
-        return fallback
-
-    try:
-        parsed = json.loads(raw)
-    except json.JSONDecodeError:
-        start = raw.find("{")
-        end = raw.rfind("}")
-        if start != -1 and end != -1 and end > start:
-            parsed = json.loads(raw[start:end + 1])
-        else:
-            parsed = {
-                "summary": raw,
-                "risk_score": 0,
-                "top_risks": [],
-                "quick_fixes": [],
-                "vibe_coder_explanation": raw,
-                "merge_recommendation": "caution",
-            }
-
-    parsed["payment_hash"] = payment_hash
-    return parsed
-
 
 def detect_snippet_language(code: str, provided_language: Optional[str] = None) -> str:
     stripped = code.strip()
@@ -1723,7 +1614,7 @@ def repo_scan(payload: RepoScanRequest, request: Request):
             ai_summary["risk_score"] = risk_score
             ai_summary["status_label"] = status_label
             ai_summary["merge_recommendation"] = status_label
-            ai_summary["severity_groups"] = group_findings_by_severity
+            ai_summary["severity_groups"] = group_findings_by_severity(pr_relevant_findings)
             ai_summary["quick_fixes"] = generate_recommended_actions(
                 pr_relevant_findings if pr_relevant_findings else findings,
                 mode="pr"
