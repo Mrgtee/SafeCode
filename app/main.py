@@ -475,25 +475,26 @@ def normalize_all(semgrep_data: Dict[str, Any], bandit_data: Dict[str, Any], tri
     return findings
 
 
-def get_og_client():
+def get_og_llm():
     if not OG_PRIVATE_KEY:
         raise HTTPException(status_code=500, detail="Missing OG_PRIVATE_KEY in environment")
 
-    try:
-        return og.Client(
-            private_key=OG_PRIVATE_KEY,
-            payment_network=os.getenv("OG_PAYMENT_NETWORK", "base_sepolia"),
-        )
-    except TypeError:
-        try:
-            return og.Client(private_key=OG_PRIVATE_KEY)
-        except AttributeError:
-            return og.init(private_key=OG_PRIVATE_KEY)
+    return og.LLM(private_key=OG_PRIVATE_KEY)
+
+_OG_APPROVAL_DONE = False
+
+def ensure_og_approval_once(llm):
+    global _OG_APPROVAL_DONE
+    if _OG_APPROVAL_DONE:
+        return
+
+    llm.ensure_opg_approval(min_allowance=5)
+    _OG_APPROVAL_DONE = True
 
 def get_settlement_mode(mode: str):
     if mode in ["snippet", "pr"]:
-        return og.x402SettlementMode.SETTLE_METADATA
-    return og.x402SettlementMode.SETTLE_BATCH
+        return og.x402SettlementMode.INDIVIDUAL_FULL
+    return og.x402SettlementMode.BATCH_HASHED
 
 def ensure_opg_approval_once(client) -> None:
     global _APPROVAL_DONE
@@ -707,6 +708,8 @@ PR evidence payload:
 
     raise ValueError(f"Unsupported mode: {mode}")
 
+import asyncio
+
 def generate_verified_reasoning(mode: str, evidence_payload: Dict[str, Any]) -> Dict[str, Any]:
     if os.getenv("OG_ENABLE_VERIFIED_REASONING", "true").lower() != "true":
         fallback = make_human_fallback_summary(mode, evidence_payload.get("findings", []))
@@ -714,23 +717,26 @@ def generate_verified_reasoning(mode: str, evidence_payload: Dict[str, Any]) -> 
         fallback["user_explanation"] = "Verified reasoning is disabled in this environment."
         return fallback
 
-    client = get_og_client()
+    llm = get_og_llm()
+    ensure_og_approval_once(llm)
     prompt = build_opengradient_prompt(mode, evidence_payload)
 
-    try:
-        result = client.llm.chat(
-            model=og.TEE_LLM.GPT_4O,
+    async def _run_chat():
+        return await llm.chat(
+            model=og.TEE_LLM.GPT_5,
             messages=[
                 {"role": "system", "content": prompt["system"]},
                 {"role": "user", "content": prompt["user"]},
             ],
             max_tokens=1800,
-            temperature=0.1,
             x402_settlement_mode=get_settlement_mode(mode),
         )
 
+    try:
+        result = asyncio.run(_run_chat())
+
         raw = result.chat_output["content"]
-        payment_hash = getattr(result, "payment_hash", None)
+        payment_hash = getattr(result, "transaction_hash", None)
 
         try:
             parsed = json.loads(raw)
