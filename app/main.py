@@ -492,8 +492,8 @@ def get_og_client():
 
 def get_settlement_mode(mode: str):
     if mode in ["snippet", "pr"]:
-        return og.x402SettlementMode.INDIVIDUAL_FULL
-    return og.x402SettlementMode.BATCH_HASHED
+        return og.x402SettlementMode.SETTLE_METADATA
+    return og.x402SettlementMode.SETTLE_BATCH
 
 def ensure_opg_approval_once(client) -> None:
     global _APPROVAL_DONE
